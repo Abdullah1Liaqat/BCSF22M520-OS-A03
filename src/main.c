@@ -4,6 +4,7 @@ int main() {
     char** arglist;
 
     while ((cmdline = read_cmd(PROMPT, stdin)) != NULL) {
+	add_history(cmdline);
         if ((arglist = tokenize(cmdline)) != NULL) {
 
             if (handle_builtin(arglist)) {

@@ -50,6 +50,15 @@ int handle_builtin(char **args)
         printf("No background jobs yet (feature coming soon)\n");
         return 1;
     }
+    if (strcmp(args[0], "history") == 0) {
+        print_history();
+        return 1;
+    }
+
+    if (args[0][0] == '!') {
+        return handle_history_recall(args);
+    }
+
 
     return 0;   // not a built-in
 }
@@ -113,4 +122,50 @@ char** tokenize(char* cmdline) {
 
     arglist[argnum] = NULL;
     return arglist;
+}
+// ---------- Command History ----------
+
+
+static char *history[HISTORY_SIZE];
+static int history_count = 0;
+
+void add_history(const char *cmdline) {
+    if (cmdline == NULL || strlen(cmdline) == 0) return;
+
+    if (history_count < HISTORY_SIZE) {
+        history[history_count++] = strdup(cmdline);
+    } else {
+        free(history[0]);
+        for (int i = 1; i < HISTORY_SIZE; i++)
+            history[i - 1] = history[i];
+        history[HISTORY_SIZE - 1] = strdup(cmdline);
+    }
+}
+
+void print_history(void) {
+    for (int i = 0; i < history_count; i++) {
+        printf("%d  %s\n", i + 1, history[i]);
+    }
+}
+
+// Handle !n command
+int handle_history_recall(char **args) {
+    if (args[0][0] != '!') return 0;
+
+    int index = atoi(args[0] + 1) - 1;
+    if (index < 0 || index >= history_count) {
+        printf("No such command in history.\n");
+        return 1;
+    }
+
+    printf("Re-executing: %s\n", history[index]);
+    char *cmdline = strdup(history[index]);
+    char **new_args = tokenize(cmdline);
+    if (new_args != NULL) {
+        execute(new_args);
+        for (int i = 0; new_args[i] != NULL; i++) free(new_args[i]);
+        free(new_args);
+    }
+    free(cmdline);
+    return 1;
 }

@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include <errno.h>
 
+#define HISTORY_SIZE 100
 #define MAX_LEN 512
 #define MAXARGS 10
 #define ARGLEN 30
@@ -19,4 +20,9 @@ char* read_cmd(char* prompt, FILE* fp);
 char** tokenize(char* cmdline);
 int execute(char** arglist);
 int handle_builtin(char **args);
+void add_history(const char *cmdline);
+void print_history(void);
+int handle_history_recall(char **args);
+
 #endif // SHELL_H
+
